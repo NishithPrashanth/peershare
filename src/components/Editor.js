@@ -9,8 +9,7 @@ import 'codemirror/lib/codemirror.css';
 const Editor = () => {
    useEffect(() => {
  async function init(){
-        console.log('init');
-        console.log('afjkdhf');
+        
         CodeMirror.fromTextArea(document.getElementById('realTimeEditor'), {
             lineNumbers: true,
             mode:{name: 'javascript', json: true},
