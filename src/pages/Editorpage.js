@@ -10,6 +10,7 @@ import { useLocation, useNavigate, Navigate,useParams} from 'react-router-dom';
 const Editorpage = () => {
     const socketRef = useRef(null);
     const {roomId} = useParams();
+    const codeRef = useRef(null);
     
     const location =useLocation();
     const reactNavigate = useNavigate();
@@ -44,21 +45,64 @@ const Editorpage = () => {
                         console.log(`${username} joined`);
                     }
                     setClients(clients);
+                    socketRef.current.emit(ACTIONS.SYNC_CODE, {
+                        code: codeRef.current,
+                        socketId,
+                    });
                     
                 }
             )
+
+            //for disconnected
+            socketRef.current.on(
+                ACTIONS.DISCONNECTED,
+                ({ socketId, username }) => {
+                    if (username !== location.state?.username) {
+                        alert(`${username} left the room.`);
+                        console.log(`${username} left`);
+                    }
+                    setClients((prev) => {
+                        return prev.filter(
+                            (client) => client.socketId !== socketId
+                        );
+                    });
+                }
+            );
             
 
         }
         init();
+        return () => {
+            socketRef.current.disconnect();
+            socketRef.current.off(ACTIONS.JOINED);
+            socketRef.current.off(ACTIONS.DISCONNECTED);
+        };
        
     },[])
+
+    function copyRoomId() {
+       
+    
+        navigator.clipboard.writeText(roomId)
+            .then(() => {
+                alert("Room ID copied to clipboard");
+            })
+            .catch((error) => {
+                console.error('Failed to copy: ', error);
+                alert("Failed to copy Room ID to clipboard");
+            });
+    }
+    
+
+    function leaveRoom(){
+        reactNavigate('/');
+    }
     
     
     
-    //if (!location.state) {
-      //  return <Navigate to="/" />;
-    //}
+    if (!location.state) {
+        return <Navigate to="/" />;
+    }
 
 
 
@@ -85,16 +129,23 @@ const Editorpage = () => {
                         ))}
                     </div>
                 </div>
-                <button className="btn copyBtn" >
+                <button className="btn copyBtn" onClick={copyRoomId} >
                     Copy ROOM ID
                 </button>
-                <button className="btn leaveBtn" >
+                <button className="btn leaveBtn" onClick={leaveRoom} >
                     Leave
                 </button>
 
             </div>
             <div className="editorWrap">
-            <Editor/>
+            <Editor
+            socketRef={socketRef}
+            roomId={roomId}
+            onCodeChange={(code) => {
+                codeRef.current = code;
+            }}
+        
+            />
             </div>
            
         </div>
