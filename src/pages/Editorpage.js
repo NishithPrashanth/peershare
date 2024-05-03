@@ -23,6 +23,7 @@ const Editorpage = () => {
      useEffect(() => {
         const init = async() =>{
             socketRef.current =await initSocket();
+            
             socketRef.current.on('connect_error', (err) => handleErrors(err));
             socketRef.current.on('connect_failed', (err) => handleErrors(err));
 
