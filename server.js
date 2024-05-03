@@ -8,13 +8,18 @@ const server = http.createServer(app);
 
 const { Server } = require("socket.io");
 const ACTIONS = require('./src/Actions');
-const path = require('path');
-const io = new Server(server, {
+const path = require('path');const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"]
-    }
-});
+      origin: ['https://peershare-pk64.onrender.com', 'http://localhost:3000'], // Ensure this matches your deployed app's URL and local development
+      methods: ['GET', 'POST'],
+      credentials: true, // If you require authentication/cookies
+    },
+  });
+app.use(cors({
+    origin: ['https://peershare-pk64.onrender.com', 'http://localhost:3000'], // Allows connections from the deployed app and local development
+    methods: ['GET', 'POST'], // Specifies allowed HTTP methods
+    credentials: true, // Allows the use of cookies/credentials if required
+  }));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
@@ -25,6 +30,7 @@ app.use(express.static('build'));
 app.use((req, res, next) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 const userSocketMap = {};
 function getAllConnectedClients(roomId) {
     // Map
